@@ -2,9 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QListWidget>
-#include <QLabel>
+#include <QTableView>
 #include <QToolBar>
+#include "ContactModel.h"
+#include "ContactDialog.h"
 
 class MainWindow : public QMainWindow
 {
@@ -13,18 +14,18 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void onAddContact();
+    void onEditContact();
+    void onDeleteContact();
+
 private:
     void setupUI();
     void setupToolBar();
+    void setupTableView();
 
-    QListWidget *contactList;
-    QLabel *nameLabel;
-    QLabel *phoneLabel;
-    QLabel *emailLabel;
-    QLabel *addressLabel;
-    QLabel *notesLabel;
-    QLabel *avatarLabel;
-    QLabel *nameTitle;
+    ContactModel *contactModel;
+    QTableView *tableView;
 };
 
 #endif // MAINWINDOW_H

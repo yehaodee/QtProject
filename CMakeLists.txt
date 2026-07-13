@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 
 project(QtProject LANGUAGES CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOUIC ON)
@@ -15,8 +17,13 @@ find_package(Qt5 COMPONENTS Widgets Core REQUIRED)
 
 add_executable(QtProject
     main.cpp
-    mainwindow.cpp
-    mainwindow.h
+    MainWindow.cpp
+    MainWindow.h
+    ContactModel.cpp
+    ContactModel.h
+    ContactDialog.cpp
+    ContactDialog.h
+    Contact.h
 )
 
 target_link_libraries(QtProject PRIVATE Qt5::Core Qt5::Widgets)
