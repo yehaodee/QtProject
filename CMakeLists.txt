@@ -23,6 +23,8 @@ add_executable(QtProject
     ContactModel.h
     ContactDialog.cpp
     ContactDialog.h
+    ContactDetailPanel.cpp
+    ContactDetailPanel.h
     Contact.h
 )
 

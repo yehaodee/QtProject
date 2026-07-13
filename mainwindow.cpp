@@ -8,7 +8,7 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     setWindowTitle("个人通讯录 V1.0");
-    resize(900, 600);
+    resize(1500, 800);
     setupUI();
 }
 
@@ -20,6 +20,16 @@ void MainWindow::setupUI()
 {
     setupToolBar();
     setupTableView();
+    setupDetailPanel();
+
+    splitter = new QSplitter(Qt::Horizontal, this);
+    splitter->addWidget(tableView);
+    splitter->addWidget(detailPanel);
+
+    splitter->setStretchFactor(0, 1);
+    splitter->setStretchFactor(1, 0);
+
+    setCentralWidget(splitter);
 }
 
 void MainWindow::setupToolBar()
@@ -47,9 +57,20 @@ void MainWindow::setupTableView()
     tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView->setAlternatingRowColors(true);
-    tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-    setCentralWidget(tableView);
+    tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    tableView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
+    tableView->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
+    tableView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Stretch);
+
+    connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &MainWindow::onSelectionChanged);
+}
+
+void MainWindow::setupDetailPanel()
+{
+    detailPanel = new ContactDetailPanel(this);
 }
 
 void MainWindow::onAddContact()
@@ -76,6 +97,7 @@ void MainWindow::onEditContact()
     if (dialog.exec() == QDialog::Accepted) {
         Contact updated = dialog.getContact();
         contactModel->updateContact(row, updated);
+        detailPanel->updateContact(updated);
     }
 }
 
@@ -94,5 +116,19 @@ void MainWindow::onDeleteContact()
 
     if (reply == QMessageBox::Yes) {
         contactModel->removeContact(row);
+        detailPanel->updateContact(Contact());
     }
+}
+
+void MainWindow::onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+{
+    Q_UNUSED(deselected);
+    if (selected.isEmpty()) {
+        detailPanel->updateContact(Contact());
+        return;
+    }
+
+    QModelIndex index = selected.indexes().first();
+    Contact contact = contactModel->getContact(index.row());
+    detailPanel->updateContact(contact);
 }

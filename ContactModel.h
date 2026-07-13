@@ -15,6 +15,7 @@ class ContactModel : public QAbstractTableModel {
 public:
     explicit ContactModel(QObject *parent = nullptr);
 
+    // 必须实现的QAbstractTableModel接口方法
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;

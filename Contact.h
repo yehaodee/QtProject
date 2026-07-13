@@ -15,7 +15,8 @@ struct Contact {
     QDate birthday;
     QString notes;
 
-    static const int ColumnCount = 8;
+    // 列表只显示前5个表头
+    static const int ColumnCount = 5;
 
     Contact() = default;
     Contact(const QString &name, const QString &phone, const QString &company, 
@@ -25,6 +26,10 @@ struct Contact {
             email(email), address(address), birthday(birthday), notes(notes) {}
 
     static QStringList headerLabels() {
+        return {"姓名", "电话", "公司", "职务", "邮箱" };
+    }
+
+    static QStringList detailLabels() {
         return {"姓名", "电话", "公司", "职务", "邮箱", "地址", "生日", "备注" };
     }
 };

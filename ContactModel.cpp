@@ -39,12 +39,6 @@ QVariant ContactModel::data(const QModelIndex &index, int role) const {
         return contacts[index.row()].position;
     if (index.column() == 4)
         return contacts[index.row()].email;
-    if (index.column() == 5)
-        return contacts[index.row()].address;
-    if (index.column() == 6)
-        return contacts[index.row()].birthday.toString("yyyy-MM-dd");
-    if (index.column() == 7)
-        return contacts[index.row()].notes;
     return QVariant();
 }
 
@@ -86,16 +80,8 @@ bool ContactModel::setData(const QModelIndex &index, const QVariant &value, int 
         contacts[index.row()].position = value.toString();
     if (index.column() == 4)
         contacts[index.row()].email = value.toString();
-    if (index.column() == 5)
-        contacts[index.row()].address = value.toString();
-    if (index.column() == 6)
-        contacts[index.row()].birthday = value.toDate();
-    if (index.column() == 7)
-        contacts[index.row()].notes = value.toString();
 
-    // 发射信号，通知视图数据已更新
     emit dataChanged(index, index);
-
     return true;
 }
 
@@ -162,6 +148,21 @@ void ContactModel::addContact(const Contact &contact) {
     emit dataChanged(index(row, 0), index(row, Contact::ColumnCount - 1));
 }
 
+
+/**
+ * @brief ContactModel::removeContact 删除联系人
+ * @param row 联系人行索引
+ */
+void ContactModel::removeContact(int row) {
+    removeRows(row, 1, QModelIndex());
+    emit dataChanged(index(row, 0), index(row, Contact::ColumnCount - 1));
+}   
+
+/**
+ * @brief ContactModel::updateContact 更新联系人
+ * @param row 联系人行索引
+ * @param contact 联系人数据
+ */
 void ContactModel::updateContact(int row, const Contact &contact) {
     if (row < 0 || row >= rowCount())
         return;
@@ -174,12 +175,3 @@ Contact ContactModel::getContact(int row) const {
         return Contact();
     return contacts[row];
 }
-
-/**
- * @brief ContactModel::removeContact 删除联系人
- * @param row 联系人行索引
- */
-void ContactModel::removeContact(int row) {
-    removeRows(row, 1, QModelIndex());
-    emit dataChanged(index(row, 0), index(row, Contact::ColumnCount - 1));
-}   

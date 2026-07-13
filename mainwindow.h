@@ -4,8 +4,12 @@
 #include <QMainWindow>
 #include <QTableView>
 #include <QToolBar>
+#include <QSplitter>
+#include <QItemSelection>
+#include <QItemSelectionModel>
 #include "ContactModel.h"
 #include "ContactDialog.h"
+#include "ContactDetailPanel.h"
 
 class MainWindow : public QMainWindow
 {
@@ -18,14 +22,18 @@ private slots:
     void onAddContact();
     void onEditContact();
     void onDeleteContact();
+    void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
 private:
     void setupUI();
     void setupToolBar();
     void setupTableView();
+    void setupDetailPanel();
 
     ContactModel *contactModel;
     QTableView *tableView;
+    ContactDetailPanel *detailPanel;
+    QSplitter *splitter;
 };
 
 #endif // MAINWINDOW_H
