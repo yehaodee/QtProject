@@ -7,7 +7,7 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    setWindowTitle("个人通讯录 V1.0");
+    setWindowTitle("个人通讯录 V1.1");
     resize(1500, 800);
     setupUI();
 }
@@ -51,8 +51,13 @@ void MainWindow::setupTableView()
 {
     contactModel = new ContactModel(this);
 
+    // 使用代理模型来排序，可以不修改源数据
+    proxyModel = new QSortFilterProxyModel(this);
+    proxyModel->setSourceModel(contactModel);
+    proxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+
     tableView = new QTableView(this);
-    tableView->setModel(contactModel);
+    tableView->setModel(proxyModel);
     tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -63,6 +68,8 @@ void MainWindow::setupTableView()
     tableView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
     tableView->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
     tableView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Stretch);
+
+    tableView->setSortingEnabled(true);
 
     connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &MainWindow::onSelectionChanged);
@@ -90,7 +97,9 @@ void MainWindow::onEditContact()
         return;
     }
 
-    int row = selected.first().row();
+    QModelIndex proxyIndex = selected.first();
+    QModelIndex sourceIndex = proxyModel->mapToSource(proxyIndex);
+    int row = sourceIndex.row();
     Contact contact = contactModel->getContact(row);
 
     ContactDialog dialog(contact, this);
@@ -109,7 +118,9 @@ void MainWindow::onDeleteContact()
         return;
     }
 
-    int row = selected.first().row();
+    QModelIndex proxyIndex = selected.first();
+    QModelIndex sourceIndex = proxyModel->mapToSource(proxyIndex);
+    int row = sourceIndex.row();
     QMessageBox::StandardButton reply = QMessageBox::question(
         this, "确认删除", "确定要删除该联系人吗？",
         QMessageBox::Yes | QMessageBox::No);
@@ -128,7 +139,8 @@ void MainWindow::onSelectionChanged(const QItemSelection &selected, const QItemS
         return;
     }
 
-    QModelIndex index = selected.indexes().first();
-    Contact contact = contactModel->getContact(index.row());
+    QModelIndex proxyIndex = selected.indexes().first();
+    QModelIndex sourceIndex = proxyModel->mapToSource(proxyIndex);
+    Contact contact = contactModel->getContact(sourceIndex.row());
     detailPanel->updateContact(contact);
 }

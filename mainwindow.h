@@ -7,6 +7,7 @@
 #include <QSplitter>
 #include <QItemSelection>
 #include <QItemSelectionModel>
+#include <QSortFilterProxyModel>
 #include "ContactModel.h"
 #include "ContactDialog.h"
 #include "ContactDetailPanel.h"
@@ -31,6 +32,7 @@ private:
     void setupDetailPanel();
 
     ContactModel *contactModel;
+    QSortFilterProxyModel *proxyModel;
     QTableView *tableView;
     ContactDetailPanel *detailPanel;
     QSplitter *splitter;
