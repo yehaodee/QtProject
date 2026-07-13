@@ -7,8 +7,9 @@
 #include <QSplitter>
 #include <QItemSelection>
 #include <QItemSelectionModel>
-#include <QSortFilterProxyModel>
+#include <QLineEdit>
 #include "ContactModel.h"
+#include "ContactSearchProxyModel.h"
 #include "ContactDialog.h"
 #include "ContactDetailPanel.h"
 
@@ -24,18 +25,21 @@ private slots:
     void onEditContact();
     void onDeleteContact();
     void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+    void onSearchTextChanged(const QString &text);
 
 private:
     void setupUI();
     void setupToolBar();
+    void setupSearchBar();
     void setupTableView();
     void setupDetailPanel();
 
     ContactModel *contactModel;
-    QSortFilterProxyModel *proxyModel;
+    ContactSearchProxyModel *proxyModel;
     QTableView *tableView;
     ContactDetailPanel *detailPanel;
     QSplitter *splitter;
+    QLineEdit *searchEdit;
 };
 
 #endif // MAINWINDOW_H

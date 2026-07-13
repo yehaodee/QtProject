@@ -1,5 +1,8 @@
 #include "mainwindow.h"
 #include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QSizePolicy>
 #include <QAction>
 #include <QStyle>
 #include <QMessageBox>
@@ -19,17 +22,45 @@ MainWindow::~MainWindow()
 void MainWindow::setupUI()
 {
     setupToolBar();
+    setupSearchBar();
     setupTableView();
     setupDetailPanel();
 
+    QWidget *leftWidget = new QWidget(this);
+    QVBoxLayout *leftLayout = new QVBoxLayout(leftWidget);
+    leftLayout->setContentsMargins(0, 0, 0, 0);
+    leftLayout->addWidget(searchEdit->parentWidget());
+    leftLayout->addWidget(tableView);
+
     splitter = new QSplitter(Qt::Horizontal, this);
-    splitter->addWidget(tableView);
+    splitter->addWidget(leftWidget);
     splitter->addWidget(detailPanel);
 
     splitter->setStretchFactor(0, 1);
     splitter->setStretchFactor(1, 0);
 
     setCentralWidget(splitter);
+
+    connect(searchEdit, &QLineEdit::textChanged,
+            this, &MainWindow::onSearchTextChanged);
+}
+
+void MainWindow::setupSearchBar()
+{
+    QWidget *searchWidget = new QWidget(this);
+    QHBoxLayout *searchLayout = new QHBoxLayout(searchWidget);
+    searchLayout->setContentsMargins(5, 5, 5, 5);
+
+    QLabel *searchLabel = new QLabel("搜索:", searchWidget);
+    searchEdit = new QLineEdit(searchWidget);
+    searchEdit->setPlaceholderText("输入姓名或电话...");
+    searchEdit->setMaximumHeight(30);
+
+    searchLayout->addWidget(searchLabel);
+    searchLayout->addWidget(searchEdit);
+
+    searchWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    searchWidget->setMaximumHeight(40);
 }
 
 void MainWindow::setupToolBar()
@@ -51,10 +82,10 @@ void MainWindow::setupTableView()
 {
     contactModel = new ContactModel(this);
 
-    // 使用代理模型来排序，可以不修改源数据
-    proxyModel = new QSortFilterProxyModel(this);
+    proxyModel = new ContactSearchProxyModel(this);
     proxyModel->setSourceModel(contactModel);
     proxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+    proxyModel->rebuildIndex();
 
     tableView = new QTableView(this);
     tableView->setModel(proxyModel);
@@ -86,6 +117,8 @@ void MainWindow::onAddContact()
     if (dialog.exec() == QDialog::Accepted) {
         Contact contact = dialog.getContact();
         contactModel->addContact(contact);
+        int row = contactModel->rowCount() - 1;
+        proxyModel->addContactIndex(row);
     }
 }
 
@@ -106,6 +139,7 @@ void MainWindow::onEditContact()
     if (dialog.exec() == QDialog::Accepted) {
         Contact updated = dialog.getContact();
         contactModel->updateContact(row, updated);
+        proxyModel->updateContactIndex(row);
         detailPanel->updateContact(updated);
     }
 }
@@ -127,6 +161,7 @@ void MainWindow::onDeleteContact()
 
     if (reply == QMessageBox::Yes) {
         contactModel->removeContact(row);
+        proxyModel->rebuildIndex();
         detailPanel->updateContact(Contact());
     }
 }
@@ -143,4 +178,9 @@ void MainWindow::onSelectionChanged(const QItemSelection &selected, const QItemS
     QModelIndex sourceIndex = proxyModel->mapToSource(proxyIndex);
     Contact contact = contactModel->getContact(sourceIndex.row());
     detailPanel->updateContact(contact);
+}
+
+void MainWindow::onSearchTextChanged(const QString &text)
+{
+    proxyModel->setSearchKeyword(text);
 }
