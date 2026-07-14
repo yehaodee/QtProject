@@ -200,11 +200,9 @@ void MainWindow::onAddContact()
         contactModel->addContact(contact);
         int row = contactModel->rowCount() - 1;
         proxyModel->addContactIndex(row);
-
-        if (currentGroup != "全部") {
-            Contact added = contactModel->getContact(row);
-            groupManager->addContactToGroup(added.id, currentGroup);
-        }
+        currentGroup = "全部";
+        proxyModel->setCurrentGroup(currentGroup);
+        groupList->clearSelection();
     }
 }
 
@@ -321,49 +319,54 @@ void MainWindow::onDeleteGroup()
 
 void MainWindow::onAddContactToGroup()
 {
-    QModelIndexList selected = tableView->selectionModel()->selectedRows();
-    if (selected.isEmpty()) {
-        QMessageBox::information(this, "提示", "请先选择要添加的联系人");
+    QListWidgetItem *selectedGroup = groupList->currentItem();
+    if (!selectedGroup) {
+        QMessageBox::information(this, "提示", "请先选择一个分组");
         return;
     }
 
-    QModelIndex proxyIndex = selected.first();
-    QModelIndex sourceIndex = proxyModel->mapToSource(proxyIndex);
-    Contact contact = contactModel->getContact(sourceIndex.row());
+    QString groupName = selectedGroup->data(Qt::UserRole).toString();
+    if (groupName == "全部") {
+        QMessageBox::information(this, "提示", "不能添加到\"全部\"分组");
+        return;
+    }
 
-    QStringList groups = groupManager->getAllGroupNames();
-    bool ok;
-    QString groupName = QInputDialog::getItem(this, "添加到分组", "选择分组:",
-                                              groups, 0, false, &ok);
-    if (ok && !groupName.isEmpty()) {
-        groupManager->addContactToGroup(contact.id, groupName);
+    ContactSelectionDialog dialog(contactModel, groupManager,
+                                  "选择要添加到 \"" + groupName + "\" 的联系人",
+                                  groupName, false, this);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        QList<Contact> selectedContacts = dialog.getSelectedContacts();
+        foreach (const Contact &c, selectedContacts) {
+            groupManager->addContactToGroup(c.id, groupName);
+        }
         proxyModel->refreshFilter();
     }
 }
 
 void MainWindow::onRemoveContactFromGroup()
 {
-    QModelIndexList selected = tableView->selectionModel()->selectedRows();
-    if (selected.isEmpty()) {
-        QMessageBox::information(this, "提示", "请先选择要移除的联系人");
+    QListWidgetItem *selectedGroup = groupList->currentItem();
+    if (!selectedGroup) {
+        QMessageBox::information(this, "提示", "请先选择一个分组");
         return;
     }
 
-    QModelIndex proxyIndex = selected.first();
-    QModelIndex sourceIndex = proxyModel->mapToSource(proxyIndex);
-    Contact contact = contactModel->getContact(sourceIndex.row());
-
-    QStringList groups = groupManager->getGroupsForContact(contact.id);
-    if (groups.isEmpty()) {
-        QMessageBox::information(this, "提示", "该联系人不属于任何分组");
+    QString groupName = selectedGroup->data(Qt::UserRole).toString();
+    if (groupName == "全部") {
+        QMessageBox::information(this, "提示", "不能从\"全部\"分组移除");
         return;
     }
 
-    bool ok;
-    QString groupName = QInputDialog::getItem(this, "从分组移除", "选择分组:",
-                                              groups, 0, false, &ok);
-    if (ok && !groupName.isEmpty()) {
-        groupManager->removeContactFromGroup(contact.id, groupName);
+    ContactSelectionDialog dialog(contactModel, groupManager,
+                                  "选择要从 \"" + groupName + "\" 移除的联系人",
+                                  groupName, true, this);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        QList<Contact> selectedContacts = dialog.getSelectedContacts();
+        foreach (const Contact &c, selectedContacts) {
+            groupManager->removeContactFromGroup(c.id, groupName);
+        }
         proxyModel->refreshFilter();
     }
 }

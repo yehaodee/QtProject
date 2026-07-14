@@ -18,6 +18,7 @@ public:
 
     void setGroupManager(ContactGroupManager *manager);
     void setCurrentGroup(const QString &groupName);
+    QString getCurrentGroup() const;
     void refreshFilter();
 
 public slots:

@@ -15,6 +15,7 @@
 #include "ContactDialog.h"
 #include "ContactDetailPanel.h"
 #include "ContactGroupManager.h"
+#include "ContactSelectionDialog.h"
 
 class MainWindow : public QMainWindow
 {

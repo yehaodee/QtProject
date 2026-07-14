@@ -1,16 +1,19 @@
 #include "Contact.h"
 #include "ContactModel.h"
 
-ContactModel::ContactModel(QObject *parent) : QAbstractTableModel(parent) {
+ContactModel::ContactModel(QObject *parent) : QAbstractTableModel(parent) 
+{
 }
 
-int ContactModel::rowCount(const QModelIndex &parent) const {
+int ContactModel::rowCount(const QModelIndex &parent) const 
+{
     if (parent.isValid())
         return 0;
     return contacts.size();
 }
 
-int ContactModel::columnCount(const QModelIndex &parent) const {
+int ContactModel::columnCount(const QModelIndex &parent) const 
+{
     if (parent.isValid())
         return 0;
     return Contact::ColumnCount;
@@ -22,7 +25,8 @@ int ContactModel::columnCount(const QModelIndex &parent) const {
  * @param role 角色
  * @return QVariant 单元格数据
  */
-QVariant ContactModel::data(const QModelIndex &index, int role) const {
+QVariant ContactModel::data(const QModelIndex &index, int role) const 
+{
     if (!index.isValid())
         return QVariant();
     if (role != Qt::DisplayRole && role != Qt::EditRole)
@@ -49,7 +53,8 @@ QVariant ContactModel::data(const QModelIndex &index, int role) const {
  * @param role 角色
  * @return QVariant 表头数据
  */
-QVariant ContactModel::headerData(int section, Qt::Orientation orientation, int role) const {
+QVariant ContactModel::headerData(int section, Qt::Orientation orientation, int role) const 
+{
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
         return Contact::headerLabels().value(section, "未知");
     }
@@ -63,7 +68,8 @@ QVariant ContactModel::headerData(int section, Qt::Orientation orientation, int 
  * @param role 角色
  * @return bool 是否成功设置数据
  */
-bool ContactModel::setData(const QModelIndex &index, const QVariant &value, int role) {
+bool ContactModel::setData(const QModelIndex &index, const QVariant &value, int role) 
+{
     if (!index.isValid())
         return false;
     if (role != Qt::EditRole)
@@ -90,7 +96,8 @@ bool ContactModel::setData(const QModelIndex &index, const QVariant &value, int 
  * @param index 单元格索引
  * @return Qt::ItemFlags 单元格标志
  */
-Qt::ItemFlags ContactModel::flags(const QModelIndex &index) const {
+Qt::ItemFlags ContactModel::flags(const QModelIndex &index) const 
+{
     if (!index.isValid())
         return Qt::NoItemFlags;
     // 用户不能直接编辑，后续使用对话框来编辑
@@ -104,7 +111,8 @@ Qt::ItemFlags ContactModel::flags(const QModelIndex &index) const {
  * @param parent 父索引（此处必为无效索引）
  * @return bool 是否成功插入行
  */
-bool ContactModel::insertRows(int row, int count, const QModelIndex &parent) {
+bool ContactModel::insertRows(int row, int count, const QModelIndex &parent) 
+{
     if (parent.isValid())
         return false;
     if  (row < 0 || row > rowCount(parent))
@@ -124,7 +132,8 @@ bool ContactModel::insertRows(int row, int count, const QModelIndex &parent) {
  * @param parent 父索引（此处必为无效索引）
  * @return bool 是否成功删除行
  */
-bool ContactModel::removeRows(int row, int count, const QModelIndex &parent) {
+bool ContactModel::removeRows(int row, int count, const QModelIndex &parent) 
+{
     if (parent.isValid())
         return false;
     if (row < 0 || row + count > rowCount(parent))
@@ -141,7 +150,8 @@ bool ContactModel::removeRows(int row, int count, const QModelIndex &parent) {
  * @brief ContactModel::addContact 添加联系人
  * @param contact 联系人数据
  */
-void ContactModel::addContact(const Contact &contact) {
+void ContactModel::addContact(const Contact &contact) 
+{
     int row = rowCount();
     insertRows(row, 1, QModelIndex());
     Contact c = contact;
@@ -157,7 +167,8 @@ void ContactModel::addContact(const Contact &contact) {
  * @brief ContactModel::removeContact 删除联系人
  * @param row 联系人行索引
  */
-void ContactModel::removeContact(int row) {
+void ContactModel::removeContact(int row) 
+{
     removeRows(row, 1, QModelIndex());
     emit dataChanged(index(row, 0), index(row, Contact::ColumnCount - 1));
 }   
@@ -167,14 +178,16 @@ void ContactModel::removeContact(int row) {
  * @param row 联系人行索引
  * @param contact 联系人数据
  */
-void ContactModel::updateContact(int row, const Contact &contact) {
+void ContactModel::updateContact(int row, const Contact &contact) 
+{
     if (row < 0 || row >= rowCount())
         return;
     contacts[row] = contact;
     emit dataChanged(index(row, 0), index(row, Contact::ColumnCount - 1));
 }
 
-Contact ContactModel::getContact(int row) const {
+Contact ContactModel::getContact(int row) const 
+{
     if (row < 0 || row >= rowCount())
         return Contact();
     return contacts[row];

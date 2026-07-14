@@ -31,6 +31,8 @@ add_executable(QtProject
     ContactGroup.h
     ContactGroupManager.cpp
     ContactGroupManager.h
+    ContactSelectionDialog.cpp
+    ContactSelectionDialog.h
     Trie.cpp
     Trie.h
     Contact.h

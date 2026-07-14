@@ -6,6 +6,7 @@ ContactDialog::ContactDialog(QWidget *parent) : QDialog(parent) {
 
 ContactDialog::ContactDialog(const Contact &contact, QWidget *parent) : QDialog(parent) {
     initUI();
+    originalId = contact.id;
     nameEdit->setText(contact.name);
     phoneEdit->setText(contact.phone);
     companyEdit->setText(contact.company);
@@ -53,6 +54,7 @@ void ContactDialog::initUI() {
 
 Contact ContactDialog::getContact() const {
     return Contact(
+        originalId,
         nameEdit->text(),
         phoneEdit->text(),
         companyEdit->text(),

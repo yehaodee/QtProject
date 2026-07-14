@@ -19,6 +19,7 @@ public:
 private:
     void initUI();
 
+    QString originalId;
     QLineEdit *nameEdit;
     QLineEdit *phoneEdit;
     QLineEdit *companyEdit;

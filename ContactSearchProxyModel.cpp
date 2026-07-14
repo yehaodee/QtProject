@@ -63,6 +63,10 @@ void ContactSearchProxyModel::setCurrentGroup(const QString &groupName) {
     invalidateFilter();
 }
 
+QString ContactSearchProxyModel::getCurrentGroup() const {
+    return currentGroup;
+}
+
 void ContactSearchProxyModel::refreshFilter() {
     invalidateFilter();
 }
