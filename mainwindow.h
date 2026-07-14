@@ -16,6 +16,7 @@
 #include "ContactDetailPanel.h"
 #include "ContactGroupManager.h"
 #include "ContactSelectionDialog.h"
+#include "DataManager.h"
 
 class MainWindow : public QMainWindow
 {
@@ -48,6 +49,7 @@ private:
     ContactModel *contactModel;
     ContactSearchProxyModel *proxyModel;
     ContactGroupManager *groupManager;
+    DataManager *dataManager;
     QTableView *tableView;
     ContactDetailPanel *detailPanel;
     QSplitter *splitter;

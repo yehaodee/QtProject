@@ -192,3 +192,15 @@ Contact ContactModel::getContact(int row) const
         return Contact();
     return contacts[row];
 }
+
+QList<Contact> ContactModel::getAllContacts() const
+{
+    return contacts;
+}
+
+void ContactModel::setAllContacts(const QList<Contact> &newContacts)
+{
+    beginResetModel();
+    contacts = newContacts;
+    endResetModel();
+}

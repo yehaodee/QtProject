@@ -33,6 +33,8 @@ public:
     void removeContact(int row);
     void updateContact(int row, const Contact &contact);
     Contact getContact(int row) const;
+    QList<Contact> getAllContacts() const;
+    void setAllContacts(const QList<Contact> &newContacts);
 
 private:
     QList<Contact> contacts;

@@ -11,9 +11,16 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    setWindowTitle("个人通讯录 V1.3");
+    setWindowTitle("个人通讯录 V1.4");
     resize(1500, 800);
     setupUI();
+
+    dataManager = new DataManager(contactModel, groupManager, "contacts.json", this);
+    dataManager->load();
+    proxyModel->rebuildIndex();
+    updateGroupList();
+    currentGroup = "全部";
+    proxyModel->setCurrentGroup("全部");
 }
 
 MainWindow::~MainWindow()
@@ -149,8 +156,6 @@ void MainWindow::setupGroupPanel()
 
     groupWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 
-    updateGroupList();
-
     connect(groupList, &QListWidget::itemClicked,
             this, &MainWindow::onGroupClicked);
     connect(addGroupBtn, &QPushButton::clicked,
@@ -197,6 +202,7 @@ void MainWindow::onAddContact()
         currentGroup = "全部";
         proxyModel->setCurrentGroup(currentGroup);
         groupList->clearSelection();
+        dataManager->save();
     }
 }
 
@@ -222,6 +228,7 @@ void MainWindow::onDeleteContact()
         contactModel->removeContact(row);
         proxyModel->rebuildIndex();
         detailPanel->updateContact(Contact());
+        dataManager->save();
     }
 }
 
@@ -244,6 +251,7 @@ void MainWindow::onEditContact()
         contactModel->updateContact(row, updated);
         proxyModel->updateContactIndex(row);
         detailPanel->updateContact(updated);
+        dataManager->save();
     }
 }
 
@@ -280,6 +288,7 @@ void MainWindow::onAddGroup()
     if (ok && !name.isEmpty()) {
         if (groupManager->createGroup(name)) {
             updateGroupList();
+            dataManager->save();
         } else {
             QMessageBox::warning(this, "提示", "分组已存在");
         }
@@ -308,6 +317,7 @@ void MainWindow::onDeleteGroup()
             proxyModel->setCurrentGroup("全部");
         }
         updateGroupList();
+        dataManager->save();
     }
 }
 
@@ -335,6 +345,7 @@ void MainWindow::onAddContactToGroup()
             groupManager->addContactToGroup(c.id, groupName);
         }
         proxyModel->refreshFilter();
+        dataManager->save();
     }
 }
 
@@ -362,5 +373,6 @@ void MainWindow::onRemoveContactFromGroup()
             groupManager->removeContactFromGroup(c.id, groupName);
         }
         proxyModel->refreshFilter();
+        dataManager->save();
     }
 }
