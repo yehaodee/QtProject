@@ -18,6 +18,7 @@ public:
 
     void setGroupManager(ContactGroupManager *manager);
     void setCurrentGroup(const QString &groupName);
+    void setExcludeGroup(const QString &groupName);
     QString getCurrentGroup() const;
     void refreshFilter();
 
@@ -32,6 +33,7 @@ private:
     Trie phoneTrie;
     QString currentKeyword;
     QString currentGroup;
+    bool excludeGroup;
     ContactGroupManager *groupManager;
 };
 

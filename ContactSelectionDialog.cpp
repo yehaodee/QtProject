@@ -26,7 +26,7 @@ void ContactSelectionDialog::setupUI()
     if (showInGroup) {
         dialogProxyModel->setCurrentGroup(groupName);
     } else {
-        dialogProxyModel->setCurrentGroup("全部");
+        dialogProxyModel->setExcludeGroup(groupName);
     }
 
     tableView = new QTableView(this);

@@ -3,7 +3,7 @@
 #include "ContactGroupManager.h"
 
 ContactSearchProxyModel::ContactSearchProxyModel(QObject *parent)
-    : QSortFilterProxyModel(parent), groupManager(nullptr) {}
+    : QSortFilterProxyModel(parent), groupManager(nullptr), excludeGroup(false) {}
 
 void ContactSearchProxyModel::rebuildIndex() {
     nameTrie.clear();
@@ -60,6 +60,13 @@ void ContactSearchProxyModel::setGroupManager(ContactGroupManager *manager) {
 
 void ContactSearchProxyModel::setCurrentGroup(const QString &groupName) {
     currentGroup = groupName;
+    excludeGroup = false;
+    invalidateFilter();
+}
+
+void ContactSearchProxyModel::setExcludeGroup(const QString &groupName) {
+    currentGroup = groupName;
+    excludeGroup = true;
     invalidateFilter();
 }
 
@@ -85,8 +92,15 @@ bool ContactSearchProxyModel::filterAcceptsRow(int source_row, const QModelIndex
     Contact c = source->getContact(source_row);
 
     if (!currentGroup.isEmpty() && currentGroup != "全部") {
-        if (!groupManager || !groupManager->isContactInGroup(c.id, currentGroup)) {
-            return false;
+        bool isInGroup = groupManager && groupManager->isContactInGroup(c.id, currentGroup);
+        if (excludeGroup) {
+            if (isInGroup) {
+                return false;
+            }
+        } else {
+            if (!isInGroup) {
+                return false;
+            }
         }
     }
 
