@@ -3,6 +3,7 @@
 
 #include <QAbstractTableModel>
 #include <QList>
+#include <QUuid>
 #include "Contact.h"
 
 /**

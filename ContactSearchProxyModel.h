@@ -4,6 +4,8 @@
 #include <QSortFilterProxyModel>
 #include "Trie.h"
 
+class ContactGroupManager;
+
 class ContactSearchProxyModel : public QSortFilterProxyModel {
     Q_OBJECT
 public:
@@ -13,6 +15,10 @@ public:
     void addContactIndex(int row);
     void removeContactIndex(int row);
     void updateContactIndex(int row);
+
+    void setGroupManager(ContactGroupManager *manager);
+    void setCurrentGroup(const QString &groupName);
+    void refreshFilter();
 
 public slots:
     void setSearchKeyword(const QString &keyword);
@@ -24,6 +30,8 @@ private:
     Trie nameTrie;
     Trie phoneTrie;
     QString currentKeyword;
+    QString currentGroup;
+    ContactGroupManager *groupManager;
 };
 
 #endif // CONTACTSEARCHPROXYMODEL_H

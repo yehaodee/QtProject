@@ -27,6 +27,10 @@ add_executable(QtProject
     ContactDetailPanel.h
     ContactSearchProxyModel.cpp
     ContactSearchProxyModel.h
+    ContactGroup.cpp
+    ContactGroup.h
+    ContactGroupManager.cpp
+    ContactGroupManager.h
     Trie.cpp
     Trie.h
     Contact.h

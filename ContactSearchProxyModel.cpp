@@ -1,8 +1,9 @@
 #include "ContactSearchProxyModel.h"
 #include "ContactModel.h"
+#include "ContactGroupManager.h"
 
 ContactSearchProxyModel::ContactSearchProxyModel(QObject *parent)
-    : QSortFilterProxyModel(parent) {}
+    : QSortFilterProxyModel(parent), groupManager(nullptr) {}
 
 void ContactSearchProxyModel::rebuildIndex() {
     nameTrie.clear();
@@ -53,6 +54,19 @@ void ContactSearchProxyModel::updateContactIndex(int row) {
     addContactIndex(row);
 }
 
+void ContactSearchProxyModel::setGroupManager(ContactGroupManager *manager) {
+    groupManager = manager;
+}
+
+void ContactSearchProxyModel::setCurrentGroup(const QString &groupName) {
+    currentGroup = groupName;
+    invalidateFilter();
+}
+
+void ContactSearchProxyModel::refreshFilter() {
+    invalidateFilter();
+}
+
 void ContactSearchProxyModel::setSearchKeyword(const QString &keyword) {
     currentKeyword = keyword;
     invalidateFilter();
@@ -60,6 +74,17 @@ void ContactSearchProxyModel::setSearchKeyword(const QString &keyword) {
 
 bool ContactSearchProxyModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
     Q_UNUSED(source_parent);
+
+    ContactModel *source = qobject_cast<ContactModel*>(sourceModel());
+    if (!source) return false;
+
+    Contact c = source->getContact(source_row);
+
+    if (!currentGroup.isEmpty() && currentGroup != "全部") {
+        if (!groupManager || !groupManager->isContactInGroup(c.id, currentGroup)) {
+            return false;
+        }
+    }
 
     if (currentKeyword.isEmpty()) {
         return true;

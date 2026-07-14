@@ -144,7 +144,11 @@ bool ContactModel::removeRows(int row, int count, const QModelIndex &parent) {
 void ContactModel::addContact(const Contact &contact) {
     int row = rowCount();
     insertRows(row, 1, QModelIndex());
-    contacts[row] = contact;
+    Contact c = contact;
+    if (c.id.isEmpty()) {
+        c.id = QUuid::createUuid().toString();
+    }
+    contacts[row] = c;
     emit dataChanged(index(row, 0), index(row, Contact::ColumnCount - 1));
 }
 

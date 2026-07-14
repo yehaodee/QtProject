@@ -8,10 +8,13 @@
 #include <QItemSelection>
 #include <QItemSelectionModel>
 #include <QLineEdit>
+#include <QListWidget>
+#include <QPushButton>
 #include "ContactModel.h"
 #include "ContactSearchProxyModel.h"
 #include "ContactDialog.h"
 #include "ContactDetailPanel.h"
+#include "ContactGroupManager.h"
 
 class MainWindow : public QMainWindow
 {
@@ -26,6 +29,11 @@ private slots:
     void onDeleteContact();
     void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void onSearchTextChanged(const QString &text);
+    void onGroupClicked(QListWidgetItem *item);
+    void onAddGroup();
+    void onDeleteGroup();
+    void onAddContactToGroup();
+    void onRemoveContactFromGroup();
 
 private:
     void setupUI();
@@ -33,13 +41,18 @@ private:
     void setupSearchBar();
     void setupTableView();
     void setupDetailPanel();
+    void setupGroupPanel();
+    void updateGroupList();
 
     ContactModel *contactModel;
     ContactSearchProxyModel *proxyModel;
+    ContactGroupManager *groupManager;
     QTableView *tableView;
     ContactDetailPanel *detailPanel;
     QSplitter *splitter;
     QLineEdit *searchEdit;
+    QListWidget *groupList;
+    QString currentGroup;
 };
 
 #endif // MAINWINDOW_H
