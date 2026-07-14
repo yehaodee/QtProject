@@ -31,13 +31,18 @@ void MainWindow::setupUI()
     QWidget *leftWidget = new QWidget(this);
     QVBoxLayout *leftLayout = new QVBoxLayout(leftWidget);
     leftLayout->setContentsMargins(0, 0, 0, 0);
-    leftLayout->addWidget(searchEdit->parentWidget());
-    leftLayout->addWidget(tableView);
 
-    QWidget *middleWidget = new QWidget(this);
-    QVBoxLayout *middleLayout = new QVBoxLayout(middleWidget);
-    middleLayout->setContentsMargins(0, 0, 0, 0);
-    middleLayout->addWidget(leftWidget);
+    QWidget *searchWidget = new QWidget(this);
+    QHBoxLayout *searchLayout = new QHBoxLayout(searchWidget);
+    searchLayout->setContentsMargins(5, 5, 5, 5);
+    QLabel *searchLabel = new QLabel("搜索:", searchWidget);
+    searchLayout->addWidget(searchLabel);
+    searchLayout->addWidget(searchEdit);
+    searchWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    searchWidget->setMaximumHeight(40);
+
+    leftLayout->addWidget(searchWidget);
+    leftLayout->addWidget(tableView);
 
     splitter = new QSplitter(Qt::Horizontal, this);
     splitter->addWidget(groupList->parentWidget());
@@ -56,20 +61,9 @@ void MainWindow::setupUI()
 
 void MainWindow::setupSearchBar()
 {
-    QWidget *searchWidget = new QWidget(this);
-    QHBoxLayout *searchLayout = new QHBoxLayout(searchWidget);
-    searchLayout->setContentsMargins(5, 5, 5, 5);
-
-    QLabel *searchLabel = new QLabel("搜索:", searchWidget);
-    searchEdit = new QLineEdit(searchWidget);
+    searchEdit = new QLineEdit();
     searchEdit->setPlaceholderText("输入姓名或电话...");
     searchEdit->setMaximumHeight(30);
-
-    searchLayout->addWidget(searchLabel);
-    searchLayout->addWidget(searchEdit);
-
-    searchWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    searchWidget->setMaximumHeight(40);
 }
 
 void MainWindow::setupToolBar()
@@ -133,19 +127,19 @@ void MainWindow::setupGroupPanel()
     groupManager->setContactModel(contactModel);
     proxyModel->setGroupManager(groupManager);
 
-    QWidget *groupWidget = new QWidget(this);
+    QWidget *groupWidget = new QWidget();
     QVBoxLayout *groupLayout = new QVBoxLayout(groupWidget);
     groupLayout->setContentsMargins(5, 5, 5, 5);
 
-    QLabel *groupLabel = new QLabel("分组", groupWidget);
+    QLabel *groupLabel = new QLabel("分组");
 
-    groupList = new QListWidget(groupWidget);
+    groupList = new QListWidget();
     groupList->setMinimumWidth(120);
     groupList->setMaximumWidth(180);
 
     QHBoxLayout *groupButtonsLayout = new QHBoxLayout();
-    QPushButton *addGroupBtn = new QPushButton("+", groupWidget);
-    QPushButton *deleteGroupBtn = new QPushButton("-", groupWidget);
+    QPushButton *addGroupBtn = new QPushButton("+");
+    QPushButton *deleteGroupBtn = new QPushButton("-");
     groupButtonsLayout->addWidget(addGroupBtn);
     groupButtonsLayout->addWidget(deleteGroupBtn);
 
