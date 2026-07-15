@@ -35,8 +35,6 @@ add_executable(QtProject
     ContactSelectionDialog.h
     DataManager.cpp
     DataManager.h
-    Trie.cpp
-    Trie.h
     Contact.h
     LRUCache.cpp
     LRUCache.h

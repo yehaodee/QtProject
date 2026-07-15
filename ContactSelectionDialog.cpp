@@ -21,7 +21,6 @@ void ContactSelectionDialog::setupUI()
     dialogProxyModel = new ContactSearchProxyModel(this);
     dialogProxyModel->setSourceModel(contactModel);
     dialogProxyModel->setGroupManager(groupManager);
-    dialogProxyModel->rebuildIndex();
 
     if (showInGroup) {
         dialogProxyModel->setCurrentGroup(groupName);

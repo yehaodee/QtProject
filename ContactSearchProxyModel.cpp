@@ -17,58 +17,8 @@ void ContactSearchProxyModel::setSourceModel(QAbstractItemModel *model) {
         connect(model, &QAbstractItemModel::dataChanged,
                 this, &ContactSearchProxyModel::onDataChanged);
         connect(model, &QAbstractItemModel::modelReset,
-                this, &ContactSearchProxyModel::rebuildIndex);
-        rebuildIndex();
+                this, &ContactSearchProxyModel::refreshFilter);
     }
-}
-
-void ContactSearchProxyModel::rebuildIndex() {
-    nameTrie.clear();
-    phoneTrie.clear();
-
-    ContactModel *source = qobject_cast<ContactModel*>(sourceModel());
-    if (!source) return;
-
-    for (int i = 0; i < source->rowCount(); ++i) {
-        Contact c = source->getContact(i);
-        if (!c.name.isEmpty()) {
-            nameTrie.insert(c.name, i);
-        }
-        if (!c.phone.isEmpty()) {
-            phoneTrie.insert(c.phone, i);
-        }
-    }
-}
-
-void ContactSearchProxyModel::addContactIndex(int row) {
-    ContactModel *source = qobject_cast<ContactModel*>(sourceModel());
-    if (!source) return;
-
-    Contact c = source->getContact(row);
-    if (!c.name.isEmpty()) {
-        nameTrie.insert(c.name, row);
-    }
-    if (!c.phone.isEmpty()) {
-        phoneTrie.insert(c.phone, row);
-    }
-}
-
-void ContactSearchProxyModel::removeContactIndex(int row) {
-    ContactModel *source = qobject_cast<ContactModel*>(sourceModel());
-    if (!source) return;
-
-    Contact c = source->getContact(row);
-    if (!c.name.isEmpty()) {
-        nameTrie.remove(c.name, row);
-    }
-    if (!c.phone.isEmpty()) {
-        phoneTrie.remove(c.phone, row);
-    }
-}
-
-void ContactSearchProxyModel::updateContactIndex(int row) {
-    removeContactIndex(row);
-    addContactIndex(row);
 }
 
 void ContactSearchProxyModel::setGroupManager(ContactGroupManager *manager) {
@@ -104,20 +54,22 @@ void ContactSearchProxyModel::refreshFilter() {
 
 void ContactSearchProxyModel::onRowsInserted(const QModelIndex &parent, int first, int last) {
     Q_UNUSED(parent);
-    for (int i = first; i <= last; ++i) {
-        addContactIndex(i);
-    }
+    Q_UNUSED(first);
+    Q_UNUSED(last);
+    invalidateFilter();
 }
 
 void ContactSearchProxyModel::onRowsRemoved(const QModelIndex &parent, int first, int last) {
     Q_UNUSED(parent);
-    rebuildIndex();
+    Q_UNUSED(first);
+    Q_UNUSED(last);
+    invalidateFilter();
 }
 
 void ContactSearchProxyModel::onDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight) {
-    for (int row = topLeft.row(); row <= bottomRight.row(); ++row) {
-        updateContactIndex(row);
-    }
+    Q_UNUSED(topLeft);
+    Q_UNUSED(bottomRight);
+    invalidateFilter();
 }
 
 void ContactSearchProxyModel::onRecentContactsChanged() {
@@ -163,10 +115,10 @@ bool ContactSearchProxyModel::filterAcceptsRow(int source_row, const QModelIndex
         return true;
     }
 
-    QList<int> nameMatches = nameTrie.search(currentKeyword);
-    QList<int> phoneMatches = phoneTrie.search(currentKeyword);
-
-    return nameMatches.contains(source_row) || phoneMatches.contains(source_row);
+    QString keyword = currentKeyword.toLower();
+    bool nameMatch = c.name.toLower().contains(keyword);
+    bool phoneMatch = c.phone.toLower().contains(keyword);
+    return nameMatch || phoneMatch;
 }
 
 bool ContactSearchProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const

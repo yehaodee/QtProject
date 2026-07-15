@@ -2,7 +2,6 @@
 #define CONTACTSEARCHPROXYMODEL_H
 
 #include <QSortFilterProxyModel>
-#include "Trie.h"
 
 class ContactGroupManager;
 class RecentContactManager;
@@ -11,11 +10,6 @@ class ContactSearchProxyModel : public QSortFilterProxyModel {
     Q_OBJECT
 public:
     explicit ContactSearchProxyModel(QObject *parent = nullptr);
-
-    void rebuildIndex();
-    void addContactIndex(int row);
-    void removeContactIndex(int row);
-    void updateContactIndex(int row);
 
     void setGroupManager(ContactGroupManager *manager);
     void setRecentContactManager(RecentContactManager *manager);
@@ -38,8 +32,6 @@ protected:
     bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
 
 private:
-    Trie nameTrie;
-    Trie phoneTrie;
     QString currentKeyword;
     QString currentGroup;
     bool excludeGroup;
