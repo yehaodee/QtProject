@@ -6,12 +6,14 @@
 #include <QTimer>
 #include "ContactModel.h"
 #include "ContactGroupManager.h"
+#include "RecentContactManager.h"
 
 class DataManager : public QObject
 {
     Q_OBJECT
 public:
     explicit DataManager(ContactModel *model, ContactGroupManager *manager,
+                         RecentContactManager *recentManager,
                          const QString &filePath = "contacts.json",
                          QObject *parent = nullptr);
 
@@ -31,6 +33,7 @@ private:
 
     ContactModel *contactModel;
     ContactGroupManager *groupManager;
+    RecentContactManager *recentManager;
     QString filePath;
     QTimer saveTimer;
 };

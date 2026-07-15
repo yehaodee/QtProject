@@ -38,6 +38,10 @@ add_executable(QtProject
     Trie.cpp
     Trie.h
     Contact.h
+    LRUCache.cpp
+    LRUCache.h
+    RecentContactManager.cpp
+    RecentContactManager.h
 )
 
 target_link_libraries(QtProject PRIVATE Qt5::Core Qt5::Widgets)

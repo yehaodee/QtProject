@@ -7,8 +7,10 @@
 #include <QDebug>
 
 DataManager::DataManager(ContactModel *model, ContactGroupManager *manager,
+                         RecentContactManager *recentManager,
                          const QString &filePath, QObject *parent)
-    : QObject(parent), contactModel(model), groupManager(manager), filePath(filePath)
+    : QObject(parent), contactModel(model), groupManager(manager),
+      recentManager(recentManager), filePath(filePath)
 {
     saveTimer.setSingleShot(true);
     saveTimer.setInterval(500);
@@ -29,6 +31,11 @@ DataManager::DataManager(ContactModel *model, ContactGroupManager *manager,
         connect(groupManager, &ContactGroupManager::groupRemoved,
                 this, &DataManager::scheduleSave);
         connect(groupManager, &ContactGroupManager::membershipChanged,
+                this, &DataManager::scheduleSave);
+    }
+
+    if (recentManager) {
+        connect(recentManager, &RecentContactManager::recentContactsChanged,
                 this, &DataManager::scheduleSave);
     }
 }
@@ -126,6 +133,11 @@ QJsonObject DataManager::serialize()
     }
     root["groups"] = groupsObj;
 
+    // 序列化最近联系人
+    if (recentManager) {
+        root["recentContacts"] = recentManager->saveToJson();
+    }
+
     return root;
 }
 
@@ -148,6 +160,11 @@ void DataManager::deserialize(const QJsonObject &root)
         for (const QJsonValue &idVal : idArray) {
             groupManager->addContactToGroup(idVal.toString(), name);
         }
+    }
+
+    // 反序列化最近联系人
+    if (recentManager) {
+        recentManager->loadFromJson(root["recentContacts"].toArray());
     }
 }
 

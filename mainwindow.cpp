@@ -15,8 +15,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     resize(1500, 800);
     setupUI();
 
-    dataManager = new DataManager(contactModel, groupManager, "contacts.json", this);
+    recentManager = new RecentContactManager(contactModel, this);
+
+    dataManager = new DataManager(contactModel, groupManager, recentManager, "contacts.json", this);
     dataManager->load();
+
+    proxyModel->setRecentContactManager(recentManager);
+    connect(recentManager, &RecentContactManager::recentContactsChanged,
+            proxyModel, &ContactSearchProxyModel::onRecentContactsChanged);
+
     updateGroupList();
     currentGroup = "全部";
     proxyModel->setCurrentGroup("全部");
@@ -176,6 +183,10 @@ void MainWindow::updateGroupList()
     allItem->setData(Qt::UserRole, "全部");
     groupList->addItem(allItem);
 
+    QListWidgetItem *recentItem = new QListWidgetItem("最近联系");
+    recentItem->setData(Qt::UserRole, "最近联系");
+    groupList->addItem(recentItem);
+
     for (const QString &name : groupManager->getAllGroupNames()) {
         QListWidgetItem *item = new QListWidgetItem(name);
         item->setData(Qt::UserRole, name);
@@ -227,6 +238,7 @@ void MainWindow::onDeleteContact()
 
     if (reply == QMessageBox::Yes) {
         groupManager->removeContactFromAllGroups(contact.id);
+        recentManager->removeContact(contact.id);
         contactModel->removeContact(row);
         detailPanel->updateContact(Contact());
     }
@@ -265,6 +277,7 @@ void MainWindow::onSelectionChanged(const QItemSelection &selected, const QItemS
     QModelIndex sourceIndex = proxyModel->mapToSource(proxyIndex);
     Contact contact = contactModel->getContact(sourceIndex.row());
     detailPanel->updateContact(contact);
+    recentManager->recordContact(contact.id);
 }
 
 void MainWindow::onSearchTextChanged(const QString &text)
@@ -324,8 +337,8 @@ void MainWindow::onAddContactToGroup()
     }
 
     QString groupName = selectedGroup->data(Qt::UserRole).toString();
-    if (groupName == "全部") {
-        QMessageBox::information(this, "提示", "不能添加到\"全部\"分组");
+    if (groupName == "全部" || groupName == "最近联系") {
+        QMessageBox::information(this, "提示", "不能添加到该分组");
         return;
     }
 
@@ -350,8 +363,8 @@ void MainWindow::onRemoveContactFromGroup()
     }
 
     QString groupName = selectedGroup->data(Qt::UserRole).toString();
-    if (groupName == "全部") {
-        QMessageBox::information(this, "提示", "不能从\"全部\"分组移除");
+    if (groupName == "全部" || groupName == "最近联系") {
+        QMessageBox::information(this, "提示", "不能从该分组移除");
         return;
     }
 

@@ -1,9 +1,10 @@
 #include "ContactSearchProxyModel.h"
 #include "ContactModel.h"
 #include "ContactGroupManager.h"
+#include "RecentContactManager.h"
 
 ContactSearchProxyModel::ContactSearchProxyModel(QObject *parent)
-    : QSortFilterProxyModel(parent), groupManager(nullptr), excludeGroup(false) {}
+    : QSortFilterProxyModel(parent), groupManager(nullptr), recentManager(nullptr), excludeGroup(false) {}
 
 void ContactSearchProxyModel::setSourceModel(QAbstractItemModel *model) {
     QSortFilterProxyModel::setSourceModel(model);
@@ -72,10 +73,17 @@ void ContactSearchProxyModel::setGroupManager(ContactGroupManager *manager) {
     groupManager = manager;
 }
 
+void ContactSearchProxyModel::setRecentContactManager(RecentContactManager *manager) {
+    recentManager = manager;
+}
+
 void ContactSearchProxyModel::setCurrentGroup(const QString &groupName) {
     currentGroup = groupName;
     excludeGroup = false;
     invalidateFilter();
+    if (groupName == "最近联系") {
+        sort(0, Qt::AscendingOrder);
+    }
 }
 
 void ContactSearchProxyModel::setExcludeGroup(const QString &groupName) {
@@ -110,6 +118,12 @@ void ContactSearchProxyModel::onDataChanged(const QModelIndex &topLeft, const QM
     }
 }
 
+void ContactSearchProxyModel::onRecentContactsChanged() {
+    if (currentGroup == "最近联系") {
+        invalidateFilter();
+    }
+}
+
 void ContactSearchProxyModel::setSearchKeyword(const QString &keyword) {
     currentKeyword = keyword;
     invalidateFilter();
@@ -124,14 +138,21 @@ bool ContactSearchProxyModel::filterAcceptsRow(int source_row, const QModelIndex
     Contact c = source->getContact(source_row);
 
     if (!currentGroup.isEmpty() && currentGroup != "全部") {
-        bool isInGroup = groupManager && groupManager->isContactInGroup(c.id, currentGroup);
-        if (excludeGroup) {
-            if (isInGroup) {
+        if (currentGroup == "最近联系") {
+            bool isRecent = recentManager && recentManager->getRecentContactIds().contains(c.id);
+            if (!isRecent) {
                 return false;
             }
         } else {
-            if (!isInGroup) {
-                return false;
+            bool isInGroup = groupManager && groupManager->isContactInGroup(c.id, currentGroup);
+            if (excludeGroup) {
+                if (isInGroup) {
+                    return false;
+                }
+            } else {
+                if (!isInGroup) {
+                    return false;
+                }
             }
         }
     }
@@ -144,4 +165,24 @@ bool ContactSearchProxyModel::filterAcceptsRow(int source_row, const QModelIndex
     QList<int> phoneMatches = phoneTrie.search(currentKeyword);
 
     return nameMatches.contains(source_row) || phoneMatches.contains(source_row);
+}
+
+bool ContactSearchProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
+{
+    if (currentGroup == "最近联系" && recentManager) {
+        ContactModel *source = qobject_cast<ContactModel*>(sourceModel());
+        if (!source) return QSortFilterProxyModel::lessThan(left, right);
+
+        Contact leftContact = source->getContact(left.row());
+        Contact rightContact = source->getContact(right.row());
+
+        QList<QString> recentIds = recentManager->getRecentContactIds();
+        int leftIndex = recentIds.indexOf(leftContact.id);
+        int rightIndex = recentIds.indexOf(rightContact.id);
+
+        if (leftIndex >= 0 && rightIndex >= 0) {
+            return leftIndex < rightIndex;
+        }
+    }
+    return QSortFilterProxyModel::lessThan(left, right);
 }
