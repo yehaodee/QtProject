@@ -5,6 +5,20 @@
 ContactSearchProxyModel::ContactSearchProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent), groupManager(nullptr), excludeGroup(false) {}
 
+void ContactSearchProxyModel::setSourceModel(QAbstractItemModel *model) {
+    QSortFilterProxyModel::setSourceModel(model);
+    
+    if (model) {
+        connect(model, &QAbstractItemModel::rowsInserted,
+                this, &ContactSearchProxyModel::onRowsInserted);
+        connect(model, &QAbstractItemModel::rowsRemoved,
+                this, &ContactSearchProxyModel::onRowsRemoved);
+        connect(model, &QAbstractItemModel::dataChanged,
+                this, &ContactSearchProxyModel::onDataChanged);
+        rebuildIndex();
+    }
+}
+
 void ContactSearchProxyModel::rebuildIndex() {
     nameTrie.clear();
     phoneTrie.clear();
@@ -76,6 +90,24 @@ QString ContactSearchProxyModel::getCurrentGroup() const {
 
 void ContactSearchProxyModel::refreshFilter() {
     invalidateFilter();
+}
+
+void ContactSearchProxyModel::onRowsInserted(const QModelIndex &parent, int first, int last) {
+    Q_UNUSED(parent);
+    for (int i = first; i <= last; ++i) {
+        addContactIndex(i);
+    }
+}
+
+void ContactSearchProxyModel::onRowsRemoved(const QModelIndex &parent, int first, int last) {
+    Q_UNUSED(parent);
+    rebuildIndex();
+}
+
+void ContactSearchProxyModel::onDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight) {
+    for (int row = topLeft.row(); row <= bottomRight.row(); ++row) {
+        updateContactIndex(row);
+    }
 }
 
 void ContactSearchProxyModel::setSearchKeyword(const QString &keyword) {

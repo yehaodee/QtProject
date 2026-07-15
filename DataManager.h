@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QTimer>
 #include "ContactModel.h"
 #include "ContactGroupManager.h"
 
@@ -17,6 +18,10 @@ public:
     bool load();
     bool save();
 
+private slots:
+    void scheduleSave();
+    void performSave();
+
 private:
     QJsonObject serialize();
     void deserialize(const QJsonObject &root);
@@ -27,6 +32,7 @@ private:
     ContactModel *contactModel;
     ContactGroupManager *groupManager;
     QString filePath;
+    QTimer saveTimer;
 };
 
 #endif // DATAMANAGER_H

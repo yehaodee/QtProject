@@ -13,6 +13,11 @@ class ContactModel;
 class ContactGroupManager : public QObject
 {
     Q_OBJECT
+signals:
+    void groupAdded(const QString &groupName);
+    void groupRemoved(const QString &groupName);
+    void membershipChanged(const QString &contactId, const QString &groupName);
+
 public:
     explicit ContactGroupManager(QObject *parent = nullptr);
     ~ContactGroupManager();

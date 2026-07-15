@@ -17,10 +17,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     dataManager = new DataManager(contactModel, groupManager, "contacts.json", this);
     dataManager->load();
-    proxyModel->rebuildIndex();
     updateGroupList();
     currentGroup = "全部";
     proxyModel->setCurrentGroup("全部");
+
+    connect(groupManager, &ContactGroupManager::groupAdded,
+            this, &MainWindow::updateGroupList);
+    connect(groupManager, &ContactGroupManager::groupRemoved,
+            this, &MainWindow::updateGroupList);
+    connect(groupManager, &ContactGroupManager::membershipChanged,
+            proxyModel, &ContactSearchProxyModel::refreshFilter);
 }
 
 MainWindow::~MainWindow()
@@ -102,7 +108,6 @@ void MainWindow::setupTableView()
     proxyModel = new ContactSearchProxyModel(this);
     proxyModel->setSourceModel(contactModel);
     proxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
-    proxyModel->rebuildIndex();
 
     tableView = new QTableView(this);
     tableView->setModel(proxyModel);
@@ -197,12 +202,9 @@ void MainWindow::onAddContact()
     if (dialog.exec() == QDialog::Accepted) {
         Contact contact = dialog.getContact();
         contactModel->addContact(contact);
-        int row = contactModel->rowCount() - 1;
-        proxyModel->addContactIndex(row);
         currentGroup = "全部";
         proxyModel->setCurrentGroup(currentGroup);
         groupList->clearSelection();
-        dataManager->save();
     }
 }
 
@@ -226,9 +228,7 @@ void MainWindow::onDeleteContact()
     if (reply == QMessageBox::Yes) {
         groupManager->removeContactFromAllGroups(contact.id);
         contactModel->removeContact(row);
-        proxyModel->rebuildIndex();
         detailPanel->updateContact(Contact());
-        dataManager->save();
     }
 }
 
@@ -249,9 +249,7 @@ void MainWindow::onEditContact()
     if (dialog.exec() == QDialog::Accepted) {
         Contact updated = dialog.getContact();
         contactModel->updateContact(row, updated);
-        proxyModel->updateContactIndex(row);
         detailPanel->updateContact(updated);
-        dataManager->save();
     }
 }
 
@@ -287,8 +285,6 @@ void MainWindow::onAddGroup()
                                          QLineEdit::Normal, "", &ok);
     if (ok && !name.isEmpty()) {
         if (groupManager->createGroup(name)) {
-            updateGroupList();
-            dataManager->save();
         } else {
             QMessageBox::warning(this, "提示", "分组已存在");
         }
@@ -316,8 +312,6 @@ void MainWindow::onDeleteGroup()
             currentGroup = "全部";
             proxyModel->setCurrentGroup("全部");
         }
-        updateGroupList();
-        dataManager->save();
     }
 }
 
@@ -344,8 +338,6 @@ void MainWindow::onAddContactToGroup()
         foreach (const Contact &c, selectedContacts) {
             groupManager->addContactToGroup(c.id, groupName);
         }
-        proxyModel->refreshFilter();
-        dataManager->save();
     }
 }
 
@@ -372,7 +364,5 @@ void MainWindow::onRemoveContactFromGroup()
         foreach (const Contact &c, selectedContacts) {
             groupManager->removeContactFromGroup(c.id, groupName);
         }
-        proxyModel->refreshFilter();
-        dataManager->save();
     }
 }

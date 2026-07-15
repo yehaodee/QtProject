@@ -23,6 +23,7 @@ bool ContactGroupManager::createGroup(const QString &groupName) {
     }
     ContactGroup *group = new ContactGroup(groupName, this);
     groups.insert(groupName, group);
+    emit groupAdded(groupName);
     return true;
 }
 
@@ -32,6 +33,7 @@ bool ContactGroupManager::deleteGroup(const QString &groupName) {
     }
     ContactGroup *group = groups.take(groupName);
     delete group;
+    emit groupRemoved(groupName);
     return true;
 }
 
@@ -57,6 +59,7 @@ bool ContactGroupManager::addContactToGroup(const QString &contactId, const QStr
         return false;
     }
     group->addContactById(contactId);
+    emit membershipChanged(contactId, groupName);
     return true;
 }
 
@@ -66,6 +69,7 @@ bool ContactGroupManager::removeContactFromGroup(const QString &contactId, const
         return false;
     }
     group->removeContactById(contactId);
+    emit membershipChanged(contactId, groupName);
     return true;
 }
 

@@ -10,8 +10,43 @@ DataManager::DataManager(ContactModel *model, ContactGroupManager *manager,
                          const QString &filePath, QObject *parent)
     : QObject(parent), contactModel(model), groupManager(manager), filePath(filePath)
 {
+    saveTimer.setSingleShot(true);
+    saveTimer.setInterval(500);
+    connect(&saveTimer, &QTimer::timeout, this, &DataManager::performSave);
+
+    if (contactModel) {
+        connect(contactModel, &QAbstractItemModel::rowsInserted,
+                this, &DataManager::scheduleSave);
+        connect(contactModel, &QAbstractItemModel::rowsRemoved,
+                this, &DataManager::scheduleSave);
+        connect(contactModel, &QAbstractItemModel::dataChanged,
+                this, &DataManager::scheduleSave);
+    }
+
+    if (groupManager) {
+        connect(groupManager, &ContactGroupManager::groupAdded,
+                this, &DataManager::scheduleSave);
+        connect(groupManager, &ContactGroupManager::groupRemoved,
+                this, &DataManager::scheduleSave);
+        connect(groupManager, &ContactGroupManager::membershipChanged,
+                this, &DataManager::scheduleSave);
+    }
 }
 
+void DataManager::scheduleSave()
+{
+    saveTimer.start();
+}
+
+void DataManager::performSave()
+{
+    save();
+}
+
+/**
+ * @brief DataManager::save 保存数据到json文件
+ * @return true 如果保存成功，否则返回 false
+ */
 bool DataManager::save()
 {
     QJsonObject root = serialize();
@@ -28,6 +63,10 @@ bool DataManager::save()
     return true;
 }
 
+/**
+ * @brief DataManager::load 从json文件加载数据
+ * @return true 如果加载成功，否则返回 false
+ */
 bool DataManager::load()
 {
     QFile file(filePath);
@@ -55,6 +94,10 @@ bool DataManager::load()
     return true;
 }
 
+/**
+ * @brief DataManager::serialize 序列化数据为json对象
+ * @return QJsonObject 包含联系人和分组的json对象
+ */
 QJsonObject DataManager::serialize()
 {
     QJsonObject root;

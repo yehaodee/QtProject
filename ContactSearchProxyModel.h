@@ -22,8 +22,13 @@ public:
     QString getCurrentGroup() const;
     void refreshFilter();
 
+    void setSourceModel(QAbstractItemModel *model) override;
+
 public slots:
     void setSearchKeyword(const QString &keyword);
+    void onRowsInserted(const QModelIndex &parent, int first, int last);
+    void onRowsRemoved(const QModelIndex &parent, int first, int last);
+    void onDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
 
 protected:
     bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
