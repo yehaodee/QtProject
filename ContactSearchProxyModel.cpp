@@ -2,6 +2,7 @@
 #include "ContactModel.h"
 #include "ContactGroupManager.h"
 #include "RecentContactManager.h"
+#include "KMP.h"
 
 ContactSearchProxyModel::ContactSearchProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent), groupManager(nullptr), recentManager(nullptr), excludeGroup(false) {}
@@ -116,8 +117,8 @@ bool ContactSearchProxyModel::filterAcceptsRow(int source_row, const QModelIndex
     }
 
     QString keyword = currentKeyword.toLower();
-    bool nameMatch = c.name.toLower().contains(keyword);
-    bool phoneMatch = c.phone.toLower().contains(keyword);
+    bool nameMatch = KMP::contains(c.name.toLower(), keyword);
+    bool phoneMatch = KMP::contains(c.phone.toLower(), keyword);
     return nameMatch || phoneMatch;
 }
 

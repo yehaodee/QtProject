@@ -40,6 +40,8 @@ add_executable(QtProject
     LRUCache.h
     RecentContactManager.cpp
     RecentContactManager.h
+    KMP.cpp
+    KMP.h
 )
 
 target_link_libraries(QtProject PRIVATE Qt5::Core Qt5::Widgets)
