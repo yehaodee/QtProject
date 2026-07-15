@@ -1,0 +1,32 @@
+{
+    "contacts": [
+        {
+            "address": "",
+            "birthday": "2000-01-01",
+            "company": "",
+            "email": "",
+            "id": "{350f4c4b-e4b2-4e70-90dc-6e6eaf0a4211}",
+            "name": "1",
+            "notes": "",
+            "phone": "",
+            "position": ""
+        },
+        {
+            "address": "",
+            "birthday": "2000-01-01",
+            "company": "",
+            "email": "",
+            "id": "{89d56d42-660c-4285-83d4-32664957936f}",
+            "name": "2",
+            "notes": "",
+            "phone": "12342",
+            "position": ""
+        }
+    ],
+    "groups": {
+    },
+    "recentContacts": [
+        "{89d56d42-660c-4285-83d4-32664957936f}"
+    ],
+    "version": 1
+}

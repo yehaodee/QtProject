@@ -37,6 +37,8 @@ private slots:
     void onDeleteGroup();
     void onAddContactToGroup();
     void onRemoveContactFromGroup();
+    void onRemoveCurrentContactFromGroup();
+    void onContextMenuRequested(const QPoint &pos);
 
 private:
     void setupUI();

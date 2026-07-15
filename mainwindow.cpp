@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QHeaderView>
 #include <QInputDialog>
+#include <QMenu>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -98,8 +99,8 @@ void MainWindow::setupToolBar()
 
     toolBar->addSeparator();
 
-    QAction *addToGroupAction = toolBar->addAction(style()->standardIcon(QStyle::SP_FileDialogInfoView), "加入分组");
-    QAction *removeFromGroupAction = toolBar->addAction(style()->standardIcon(QStyle::SP_FileDialogDetailedView), "移出分组");
+    QAction *addToGroupAction = toolBar->addAction(style()->standardIcon(QStyle::SP_FileDialogInfoView), "添加成员");
+    QAction *removeFromGroupAction = toolBar->addAction(style()->standardIcon(QStyle::SP_FileDialogDetailedView), "移除成员");
 
     connect(addAction, &QAction::triggered, this, &MainWindow::onAddContact);
     connect(deleteAction, &QAction::triggered, this, &MainWindow::onDeleteContact);
@@ -131,8 +132,12 @@ void MainWindow::setupTableView()
 
     tableView->setSortingEnabled(true);
 
+    tableView->setContextMenuPolicy(Qt::CustomContextMenu);
+
     connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &MainWindow::onSelectionChanged);
+    connect(tableView, &QTableView::customContextMenuRequested,
+            this, &MainWindow::onContextMenuRequested);
 }
 
 void MainWindow::setupDetailPanel()
@@ -280,6 +285,32 @@ void MainWindow::onSelectionChanged(const QItemSelection &selected, const QItemS
     recentManager->recordContact(contact.id);
 }
 
+void MainWindow::onContextMenuRequested(const QPoint &pos)
+{
+    QModelIndex proxyIndex = tableView->indexAt(pos);
+    if (!proxyIndex.isValid()) {
+        QMenu menu(this);
+        menu.addAction("新建联系人", this, &MainWindow::onAddContact);
+        menu.exec(tableView->viewport()->mapToGlobal(pos));
+        return;
+    }
+
+    QModelIndex sourceIndex = proxyModel->mapToSource(proxyIndex);
+    Contact contact = contactModel->getContact(sourceIndex.row());
+
+    QMenu menu(this);
+
+    QAction *editAction = menu.addAction("编辑联系人", this, &MainWindow::onEditContact);
+    QAction *deleteAction = menu.addAction("删除联系人", this, &MainWindow::onDeleteContact);
+    menu.addSeparator();
+
+    if (currentGroup != "全部" && currentGroup != "最近联系") {
+        QAction *removeFromGroupAction = menu.addAction("从当前分组移除", this, &MainWindow::onRemoveCurrentContactFromGroup);
+    }
+
+    menu.exec(tableView->viewport()->mapToGlobal(pos));
+}
+
 void MainWindow::onSearchTextChanged(const QString &text)
 {
     proxyModel->setSearchKeyword(text);
@@ -369,7 +400,7 @@ void MainWindow::onRemoveContactFromGroup()
     }
 
     ContactSelectionDialog dialog(contactModel, groupManager,
-                                  "选择要从 \"" + groupName + "\" 移除的联系人",
+                                  "选择要从 \"" + groupName + "\" 中移除的联系人",
                                   groupName, true, this);
 
     if (dialog.exec() == QDialog::Accepted) {
@@ -378,4 +409,19 @@ void MainWindow::onRemoveContactFromGroup()
             groupManager->removeContactFromGroup(c.id, groupName);
         }
     }
+}
+
+void MainWindow::onRemoveCurrentContactFromGroup()
+{
+    QModelIndexList selected = tableView->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        QMessageBox::information(this, "提示", "请先选择一个联系人");
+        return;
+    }
+
+    QModelIndex proxyIndex = selected.first();
+    QModelIndex sourceIndex = proxyModel->mapToSource(proxyIndex);
+    Contact contact = contactModel->getContact(sourceIndex.row());
+
+    groupManager->removeContactFromGroup(contact.id, currentGroup);
 }
