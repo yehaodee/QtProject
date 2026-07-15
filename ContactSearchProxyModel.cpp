@@ -16,6 +16,8 @@ void ContactSearchProxyModel::setSourceModel(QAbstractItemModel *model) {
                 this, &ContactSearchProxyModel::onRowsRemoved);
         connect(model, &QAbstractItemModel::dataChanged,
                 this, &ContactSearchProxyModel::onDataChanged);
+        connect(model, &QAbstractItemModel::modelReset,
+                this, &ContactSearchProxyModel::rebuildIndex);
         rebuildIndex();
     }
 }
